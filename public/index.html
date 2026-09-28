@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sunoforge — AI Music Generator</title>
+<meta name="description" content="Generate AI music with the Suno API. Bring your own API key." />
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="header">
+      <div class="brand">
+        <span class="brand-mark">♪</span>
+        <div>
+          <h1>Sunoforge</h1>
+          <p class="tagline">Text-to-music, powered by the Suno API</p>
+        </div>
+      </div>
+      <div class="credits-pill" id="creditsPill" hidden>
+        <span id="creditsValue">—</span> credits
+      </div>
+    </header>
+
+    <main class="layout">
+      <!-- API Key -->
+      <section class="card" id="keyCard">
+        <div class="card-head">
+          <h2>1. API Key</h2>
+          <span class="status-dot" id="keyStatusDot"></span>
+        </div>
+        <p class="hint">
+          Paste your Suno API key. It's saved only in this browser (localStorage) and is sent to
+          this site's own serverless function, which forwards it to <code>api.sunoapi.org</code> —
+          it never touches any third-party server.
+          Get a key at <a href="https://sunoapi.org/api-key" target="_blank" rel="noopener">sunoapi.org/api-key</a>.
+        </p>
+        <div class="key-row">
+          <input type="password" id="apiKeyInput" placeholder="Enter your Suno API key" autocomplete="off" />
+          <button id="toggleKeyVisibility" class="btn btn-ghost" type="button" title="Show/hide key">👁</button>
+          <button id="saveKeyBtn" class="btn btn-secondary" type="button">Save</button>
+          <button id="clearKeyBtn" class="btn btn-ghost" type="button">Clear</button>
+        </div>
+        <div class="key-actions">
+          <button id="checkCreditsBtn" class="btn btn-link" type="button">Check balance</button>
+          <span id="keyMessage" class="inline-message"></span>
+        </div>
+      </section>
+
+      <!-- Generator -->
+      <section class="card" id="generatorCard">
+        <div class="card-head">
+          <h2>2. Describe your track</h2>
+        </div>
+
+        <div class="mode-toggle" role="tablist" aria-label="Generation mode">
+          <button type="button" class="mode-btn active" data-mode="simple" role="tab" aria-selected="true">Simple</button>
+          <button type="button" class="mode-btn" data-mode="custom" role="tab" aria-selected="false">Custom</button>
+        </div>
+
+        <form id="generateForm">
+          <!-- Simple mode -->
+          <div class="mode-panel" id="panel-simple">
+            <label class="field">
+              <span>Prompt <span class="req">*</span></span>
+              <textarea id="simplePrompt" rows="3" maxlength="3000"
+                placeholder="A dreamy synthwave track about driving at night through a neon city"></textarea>
+            </label>
+            <label class="field">
+              <span>Style <span class="req">*</span></span>
+              <input type="text" id="simpleStyle" maxlength="1000" placeholder="synthwave, dreamy, 80s" />
+            </label>
+            <label class="field">
+              <span>Lyrics attachment (optional)</span>
+              <textarea id="simpleLyrics" rows="3" maxlength="5000" placeholder="Leave blank to auto-generate lyrics from the prompt"></textarea>
+            </label>
+          </div>
+
+          <!-- Custom mode -->
+          <div class="mode-panel hidden" id="panel-custom">
+            <label class="field">
+              <span>Title</span>
+              <input type="text" id="customTitle" maxlength="80" placeholder="Neon Drive" />
+            </label>
+            <label class="field">
+              <span>Style <span class="req">*</span></span>
+              <input type="text" id="customStyle" maxlength="1000" placeholder="synthwave, dreamy, 80s" />
+            </label>
+            <label class="field">
+              <span>Lyrics <span class="req-hint">(required unless instrumental)</span></span>
+              <textarea id="customLyrics" rows="5" maxlength="5000" placeholder="[Verse 1]&#10;City lights are calling me..."></textarea>
+            </label>
+            <label class="field">
+              <span>Negative tags <em>(styles to avoid)</em></span>
+              <input type="text" id="customNegativeTags" maxlength="1000" placeholder="heavy metal, screaming" />
+            </label>
+          </div>
+
+          <!-- Shared controls -->
+          <div class="field-row">
+            <label class="field">
+              <span>Model</span>
+              <select id="modelSelect">
+                <option value="V6" selected>V6 (recommended)</option>
+                <option value="V6_MINI">V6 Mini (fast)</option>
+                <option value="V6_WILD">V6 Wild (bold/experimental)</option>
+                <optgroup label="Deprecated (compatibility only)">
+                  <option value="V5">V5</option>
+                  <option value="V4_5PLUS">V4.5 Plus</option>
+                  <option value="V4_5">V4.5</option>
+                  <option value="V4">V4</option>
+                </optgroup>
+              </select>
+            </label>
+            <label class="field checkbox-field">
+              <input type="checkbox" id="instrumentalCheck" />
+              <span>Instrumental (no vocals)</span>
+            </label>
+          </div>
+
+          <details class="advanced" id="customAdvanced">
+            <summary>Advanced options (custom mode)</summary>
+            <div class="field-row">
+              <label class="field">
+                <span>Vocal gender</span>
+                <select id="vocalGender">
+                  <option value="">Any</option>
+                  <option value="f">Female</option>
+                  <option value="m">Male</option>
+                </select>
+              </label>
+              <label class="field">
+                <span>Duration: <output id="durationOut">20</output>s</span>
+                <input type="range" id="durationRange" min="10" max="360" value="20" step="1" />
+              </label>
+            </div>
+            <div class="field-row">
+              <label class="field">
+                <span>Style weight: <output id="styleWeightOut">0.65</output></span>
+                <input type="range" id="styleWeight" min="0" max="1" value="0.65" step="0.01" />
+              </label>
+              <label class="field">
+                <span>Weirdness: <output id="weirdnessOut">0.5</output></span>
+                <input type="range" id="weirdnessConstraint" min="0" max="1" value="0.5" step="0.01" />
+              </label>
+            </div>
+            <label class="field">
+              <span>Variety</span>
+              <select id="varietySelect">
+                <option value="0">Off — exact style</option>
+                <option value="1" selected>Normal — balanced (default)</option>
+                <option value="2">High — distinct styles</option>
+                <option value="3">Extra — bold exploration</option>
+                <option value="4">Max — maximum variation</option>
+              </select>
+            </label>
+          </details>
+
+          <button type="submit" id="generateBtn" class="btn btn-primary btn-block">
+            Generate music
+          </button>
+        </form>
+
+        <div class="progress" id="progressBox" hidden>
+          <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+          <p id="progressText">Submitting task…</p>
+        </div>
+        <p class="error-message" id="errorBox" hidden></p>
+      </section>
+    </main>
+
+    <!-- Results -->
+    <section class="card" id="resultsCard">
+      <div class="card-head">
+        <h2>Your tracks</h2>
+        <button id="clearHistoryBtn" class="btn btn-ghost btn-sm" type="button">Clear all</button>
+      </div>
+      <div class="track-grid" id="trackGrid">
+        <p class="empty-state" id="emptyState">Generated tracks will appear here.</p>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <p>
+        Built on the <a href="https://docs.sunoapi.org" target="_blank" rel="noopener">Suno API</a>.
+        Not affiliated with Suno. Your API key stays in your browser's local storage.
+      </p>
+    </footer>
+  </div>
+
+  <template id="trackCardTemplate">
+    <article class="track-card">
+      <div class="track-art">
+        <img class="track-img" alt="" />
+        <span class="track-status-badge"></span>
+      </div>
+      <div class="track-body">
+        <h3 class="track-title"></h3>
+        <p class="track-tags"></p>
+        <audio class="track-audio" controls preload="none"></audio>
+        <div class="track-actions">
+          <a class="btn btn-ghost btn-sm track-download" download target="_blank" rel="noopener">Download</a>
+          <button class="btn btn-ghost btn-sm track-remove" type="button">Remove</button>
+        </div>
+      </div>
+    </article>
+  </template>
+
+  <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+{
+  "name": "sunoforge",
+  "version": "1.0.0",
+  "description": "One-page AI music generator UI backed by the Suno API, deployable to Netlify.",
+  "private": true,
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "dev": "netlify dev"
+  }
+}
