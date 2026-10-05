@@ -17,11 +17,36 @@
           <p class="tagline">Text-to-music, powered by the Suno API</p>
         </div>
       </div>
-      <div class="credits-pill" id="creditsPill" hidden>
-        <span id="creditsValue">—</span> credits
+      <div class="header-right">
+        <div class="user-bar" id="userBar" hidden>
+          <span id="userEmailLabel"></span>
+          <button id="logoutBtn" class="btn btn-ghost btn-sm" type="button">Log out</button>
+        </div>
+        <div class="credits-pill" id="creditsPill" hidden>
+          <span id="creditsValue">—</span> credits
+        </div>
       </div>
     </header>
 
+    <!-- Login gate -->
+    <section class="card" id="authGate">
+      <div class="card-head">
+        <h2>Sign in</h2>
+      </div>
+      <p class="hint">
+        Sign in with your email to use the generator. We'll send a one-time login link —
+        no password to set or remember.
+      </p>
+      <form id="authForm" class="key-row">
+        <input type="email" id="authEmailInput" placeholder="you@example.com" autocomplete="email" required />
+        <button type="submit" id="sendLinkBtn" class="btn btn-primary">Send login link</button>
+      </form>
+      <div class="key-actions">
+        <span id="authMessage" class="inline-message"></span>
+      </div>
+    </section>
+
+    <div id="appGate" hidden>
     <main class="layout">
       <!-- API Key -->
       <section class="card" id="keyCard">
@@ -179,6 +204,7 @@
         <p class="empty-state" id="emptyState">Generated tracks will appear here.</p>
       </div>
     </section>
+    </div>
 
     <footer class="footer">
       <p>
@@ -206,6 +232,7 @@
     </article>
   </template>
 
+  <script type="module" src="js/auth.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

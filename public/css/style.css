@@ -68,6 +68,22 @@ a { color: var(--accent-2); }
 .brand h1 { margin: 0; font-size: 22px; letter-spacing: -0.02em; }
 .tagline { margin: 2px 0 0; color: var(--text-dim); font-size: 13px; }
 
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.user-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
 .credits-pill {
   background: var(--bg-elev-2);
   border: 1px solid var(--border);
